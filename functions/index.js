@@ -4,6 +4,25 @@ admin.initializeApp();
 const logger = require("firebase-functions/logger");
 const functions = require("firebase-functions");
 
+exports.getAllElements = onRequest(async (request, response) => {
+    try {
+  
+      const usuariosSnapshot = await admin.firestore().collection('Usuarios').get();
+  
+      const usuariosData = usuariosSnapshot.docs.map(doc => doc.data());
+  
+      logger.info('Se obtuvieron todos los Usuarios correctamente.', { structuredData: true });
+  
+      response.status(200).json(usuariosData);
+    } catch (error) {
+      console.error('Error al obtener los Usuarios:', error);
+  
+      logger.error('Error al obtener los Usuarios de Firestore.', { error: error });
+  
+      response.status(500).send('Error al obtener los Usuarios de Firestore.');
+    }
+  });
+
 exports.insertElement = onRequest(async (request, response) => {
   try {
     const data = request.body;
@@ -18,11 +37,11 @@ exports.insertElement = onRequest(async (request, response) => {
 
     response.status(200).send(`Elemento con ID ${elementId} fue insertado correctamente.`);
   } catch (error) {
-    console.error('Error al insertar el usuario:', error);
+    console.error('Error al agregar el usuario:', error);
 
-    logger.error('Error al insertar el elemento.', { error: error });
+    logger.error('Error al agregar el elemento.', { error: error });
 
-    response.status(500).send('Error al insertar el elemento.');
+    response.status(500).send('Error al agregar el elemento.');
   }
 });
 
@@ -32,7 +51,7 @@ exports.deleteElement = functions.https.onRequest(async (request, response) => {
     const elementId = request.query.elementId;
 
     if (!elementId) {
-      return response.status(400).send('El parámetro elementId es necesario.');
+      return response.status(400).send('El parámetro elementId es requerido.');
     }
 
     await admin.firestore().collection('Usuarios').doc(elementId).delete();
@@ -41,30 +60,11 @@ exports.deleteElement = functions.https.onRequest(async (request, response) => {
 
     response.status(200).send(`El elemento con ID ${elementId} se eliminó correctamente.`);
   } catch (error) {
-    console.error('Error al eliminar el elemento:', error);
+    console.error('Error al borrar el elemento:', error);
 
-    functions.logger.error('Error al eliminar el elemento en Firestore.', { error: error });
+    functions.logger.error('Error al borrar el elemento en Firestore.', { error: error });
 
-    response.status(500).send('Error al eliminar el elemento en Firestore.');
-  }
-});
-
-exports.getAllElements = onRequest(async (request, response) => {
-  try {
-
-    const usuariosSnapshot = await admin.firestore().collection('Usuarios').get();
-
-    const usuariosData = usuariosSnapshot.docs.map(doc => doc.data());
-
-    logger.info('Se obtuvieron todos los elementos correctamente.', { structuredData: true });
-
-    response.status(200).json(usuariosData);
-  } catch (error) {
-    console.error('Error al obtener los elementos:', error);
-
-    logger.error('Error al obtener los elementos de Firestore.', { error: error });
-
-    response.status(500).send('Error al obtener los elementos de Firestore.');
+    response.status(500).send('Error al borrar el elemento en Firestore.');
   }
 });
   exports.addCustomDateOnCreate = functions.firestore
@@ -102,7 +102,7 @@ exports.getAllElements = onRequest(async (request, response) => {
 
         return null;
       } catch (error) {
-        console.error('Error al archivar el elemento eliminado:', error);
+        console.error('Error al guardar el elemento eliminado:', error);
         return null;
       }
     });
